@@ -1,0 +1,7 @@
+streamlit
+groq
+python-dotenv
+pandas
+requests
+tzdata
+supabase

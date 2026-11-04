@@ -1,0 +1,60 @@
+[
+  {"type": "function", "function": {
+    "name": "obtener_tipo_cambio",
+    "description": "Obtiene el tipo de cambio actual entre dos monedas. Soporta USD, EUR, GTQ, MXN, JPY, GBP.",
+    "parameters": {"type": "object", "properties": {
+      "moneda_base": {"type": "string", "description": "Codigo ISO de origen. Ejemplo: USD"},
+      "moneda_destino": {"type": "string", "description": "Codigo ISO de destino. Ejemplo: GTQ"}},
+      "required": ["moneda_base", "moneda_destino"]}}},
+
+  {"type": "function", "function": {
+    "name": "convertir_moneda",
+    "description": "Convierte un monto especifico de una moneda a otra con el tipo de cambio vigente.",
+    "parameters": {"type": "object", "properties": {
+      "monto": {"type": "number", "description": "Cantidad a convertir"},
+      "moneda_origen": {"type": "string", "description": "Codigo ISO de origen"},
+      "moneda_destino": {"type": "string", "description": "Codigo ISO de destino"}},
+      "required": ["monto", "moneda_origen", "moneda_destino"]}}},
+
+  {"type": "function", "function": {
+    "name": "historico_tipo_cambio",
+    "description": "Serie historica de un par de monedas con minimo, maximo, promedio y variacion porcentual. Para analizar tendencia y volatilidad.",
+    "parameters": {"type": "object", "properties": {
+      "moneda_base": {"type": "string", "description": "Codigo ISO base"},
+      "moneda_destino": {"type": "string", "description": "Codigo ISO destino"},
+      "dias": {"type": "integer", "description": "Dias hacia atras. Maximo 365, por defecto 30."}},
+      "required": ["moneda_base", "moneda_destino"]}}},
+
+  {"type": "function", "function": {
+    "name": "precio_cripto",
+    "description": "Precio actual de una criptomoneda, su variacion en 24 horas y capitalizacion de mercado.",
+    "parameters": {"type": "object", "properties": {
+      "criptomoneda": {"type": "string", "description": "Nombre o simbolo. Ejemplo: bitcoin, eth"},
+      "moneda": {"type": "string", "description": "Moneda fiat. Por defecto usd."}},
+      "required": ["criptomoneda"]}}},
+
+  {"type": "function", "function": {
+    "name": "indicador_macro",
+    "description": "Indicadores macroeconomicos oficiales del Banco Mundial por pais.",
+    "parameters": {"type": "object", "properties": {
+      "pais": {"type": "string", "description": "Codigo ISO de 3 letras. GTM, USA, MEX, CRI"},
+      "indicador": {"type": "string", "description": "Indicador solicitado",
+        "enum": ["pib", "pib_per_capita", "crecimiento_pib", "inflacion",
+                 "desempleo", "poblacion", "deuda_publica", "exportaciones"]}},
+      "required": ["pais", "indicador"]}}},
+
+  {"type": "function", "function": {
+    "name": "comparar_monedas",
+    "description": "Compara una moneda base contra varias monedas al mismo tiempo.",
+    "parameters": {"type": "object", "properties": {
+      "moneda_base": {"type": "string", "description": "Codigo ISO base. Ejemplo: GTQ"},
+      "monedas": {"type": "string", "description": "Codigos separados por coma. Ejemplo: USD,EUR,MXN"}},
+      "required": ["moneda_base", "monedas"]}}},
+
+  {"type": "function", "function": {
+    "name": "fecha_hora_actual",
+    "description": "Fecha y hora actual en una zona horaria, para dar contexto temporal al analisis.",
+    "parameters": {"type": "object", "properties": {
+      "zona_horaria": {"type": "string", "description": "Zona IANA. Por defecto America/Guatemala"}},
+      "required": []}}}
+]
