@@ -12,12 +12,57 @@ load_dotenv()
 
 st.set_page_config(page_title="Agente Económico IA", page_icon="💹", layout="wide")
 
-API_KEY = os.getenv("GROQ_API_KEY")
+from supabase import create_client
+
+
+def leer_secreto(nombre):
+    try:
+        return st.secrets[nombre]
+    except Exception:
+        return os.getenv(nombre)
+
+
+API_KEY = leer_secreto("GROQ_API_KEY")
 if not API_KEY:
-    st.error("No se encontró GROQ_API_KEY. Revise el archivo .env")
+    st.error("No se encontró GROQ_API_KEY.")
     st.stop()
 
 client = Groq(api_key=API_KEY)
+
+
+@st.cache_resource
+def conectar_supabase():
+    url, key = leer_secreto("SUPABASE_URL"), leer_secreto("SUPABASE_KEY")
+    if not url or not key:
+        return None
+    try:
+        return create_client(url, key)
+    except Exception:
+        return None
+
+
+db = conectar_supabase()
+
+
+def registrar_consulta(pregunta, herramientas):
+    if db is None:
+        return
+    try:
+        db.table("consultas").insert({
+            "pregunta": pregunta[:500],
+            "herramientas": ", ".join(herramientas)}).execute()
+    except Exception:
+        pass
+
+
+def total_consultas():
+    if db is None:
+        return st.session_state.consultas
+    try:
+        r = db.table("consultas").select("id", count="exact").limit(1).execute()
+        return r.count or 0
+    except Exception:
+        return st.session_state.consultas
 MODELO = "openai/gpt-oss-120b"
 MAX_ITERACIONES = 6
 LIMITE_MEMORIA = 20
@@ -142,7 +187,7 @@ with st.sidebar:
         st.markdown(f"- `{h['function']['name']}`")
     st.divider()
     st.markdown("### 📊 Consultas realizadas")
-    st.markdown(f"<h2 style='text-align:center'>{st.session_state.consultas}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align:center'>{total_consultas()}</h2>", unsafe_allow_html=True)
 
 st.title("💹 Agente Económico IA")
 st.caption("Práctica 1 · Data Analytics · Universidad Rafael Landívar")
@@ -158,8 +203,14 @@ for turno in st.session_state.historial_visible:
             else:
                 st.bar_chart(g["df"])
 
+LIMITE_SESION = 15
+
 entrada = st.chat_input("Escribe tu pregunta o solicitud...")
 if entrada:
+    if st.session_state.consultas >= LIMITE_SESION:
+        st.warning(f"Alcanzaste el límite de {LIMITE_SESION} consultas por sesión.")
+        st.stop()
+
     st.session_state.historial_visible.append({"role": "user", "content": entrada})
     with st.chat_message("user"):
         st.markdown(entrada)
@@ -176,6 +227,7 @@ if entrada:
             else:
                 st.bar_chart(grafica["df"])
 
-        st.session_state.consultas += 1
+    registrar_consulta(entrada, [n for n, _ in resultados])
+    st.session_state.consultas += 1
     st.session_state.historial_visible.append({"role": "assistant", "content": texto, "grafica": grafica})
     st.rerun()
